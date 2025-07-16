@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Equipamentos de Medição</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-cogs"></i>
+                <span>EquipManager</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="equipamentos">
+                    <i class="fas fa-tools"></i>
+                    <span>Equipamentos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="pontos-medicao">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Pontos de Medição</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="certificados">
+                    <i class="fas fa-certificate"></i>
+                    <span>Certificados</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="importacao">
+                    <i class="fas fa-file-import"></i>
+                    <span>Importação/Exportação</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="configuracoes">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span>Usuário</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="notifications">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar..." id="globalSearch">
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content" id="content">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section active">
+                <div class="dashboard-grid">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalEquipamentos">0</h3>
+                                <p>Equipamentos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalPontosMedicao">0</h3>
+                                <p>Pontos de Medição</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalCertificados">0</h3>
+                                <p>Certificados</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card alert">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalAlertas">0</h3>
+                                <p>Alertas de Calibração</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Tables -->
+                    <div class="dashboard-widgets">
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3>Equipamentos por Fabricante</h3>
+                            </div>
+                            <div class="widget-content">
+                                <canvas id="fabricantesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3>Cronograma de Calibrações</h3>
+                            </div>
+                            <div class="widget-content">
+                                <canvas id="calibracoesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="widget full-width">
+                            <div class="widget-header">
+                                <h3>Pontos Críticos - Calibração</h3>
+                                <button class="btn btn-sm" onclick="refreshCriticalPoints()">
+                                    <i class="fas fa-refresh"></i>
+                                </button>
+                            </div>
+                            <div class="widget-content">
+                                <div class="table-responsive">
+                                    <table class="table" id="pontosCriticosTable">
+                                        <thead>
+                                            <tr>
+                                                <th>TAG</th>
+                                                <th>Nome</th>
+                                                <th>Polo</th>
+                                                <th>Data Calibração</th>
+                                                <th>Status</th>
+                                                <th>Dias Restantes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pontosCriticosBody">
+                                            <!-- Dados serão carregados via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipamentos Section -->
+            <section id="equipamentos-section" class="section">
+                <div class="section-header">
+                    <h2>Gestão de Equipamentos</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="openEquipamentoModal()">
+                            <i class="fas fa-plus"></i>
+                            Novo Equipamento
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <input type="text" placeholder="Buscar equipamentos..." id="equipamentosSearch">
+                        <select id="fabricanteFilter">
+                            <option value="">Todos os Fabricantes</option>
+                        </select>
+                        <select id="tipoEquipamentoFilter">
+                            <option value="">Todos os Tipos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table" id="equipamentosTable">
+                            <thead>
+                                <tr>
+                                    <th>Número de Série</th>
+                                    <th>TAG</th>
+                                    <th>Nome</th>
+                                    <th>Fabricante</th>
+                                    <th>Tipo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equipamentosBody">
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="equipamentosPagination">
+                        <!-- Paginação será gerada via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pontos de Medição Section -->
+            <section id="pontos-medicao-section" class="section">
+                <div class="section-header">
+                    <h2>Pontos de Medição</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="openPontoMedicaoModal()">
+                            <i class="fas fa-plus"></i>
+                            Novo Ponto
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <input type="text" placeholder="Buscar pontos..." id="pontosMedicaoSearch">
+                        <select id="poloFilter">
+                            <option value="">Todos os Polos</option>
+                        </select>
+                        <select id="classificacaoFilter">
+                            <option value="">Todas as Classificações</option>
+                        </select>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="vencimentoProximoFilter">
+                            Apenas próximos do vencimento
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table" id="pontosMedicaoTable">
+                            <thead>
+                                <tr>
+                                    <th>TAG</th>
+                                    <th>Nome</th>
+                                    <th>Polo</th>
+                                    <th>Equipamento</th>
+                                    <th>Próxima Calibração</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pontosMedicaoBody">
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pontosMedicaoPagination">
+                        <!-- Paginação será gerada via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Certificados Section -->
+            <section id="certificados-section" class="section">
+                <div class="section-header">
+                    <h2>Certificados de Calibração</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="openCertificadoModal()">
+                            <i class="fas fa-plus"></i>
+                            Novo Certificado
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <input type="text" placeholder="Buscar certificados..." id="certificadosSearch">
+                        <input type="text" placeholder="Número de série..." id="numeroSerieFilter">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table" id="certificadosTable">
+                            <thead>
+                                <tr>
+                                    <th>Número Certificado</th>
+                                    <th>Equipamento</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="certificadosBody">
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="certificadosPagination">
+                        <!-- Paginação será gerada via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Importação/Exportação Section -->
+            <section id="importacao-section" class="section">
+                <div class="section-header">
+                    <h2>Importação e Exportação</h2>
+                </div>
+                
+                <div class="import-export-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Importar Dados</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="import-options">
+                                <div class="import-option">
+                                    <h4>Equipamentos</h4>
+                                    <p>Importar equipamentos de arquivo Excel</p>
+                                    <div class="file-upload">
+                                        <input type="file" id="equipamentosFile" accept=".xlsx,.xls">
+                                        <button class="btn" onclick="importarEquipamentos()">
+                                            <i class="fas fa-upload"></i>
+                                            Importar
+                                        </button>
+                                    </div>
+                                    <a href="/api/importacao/template-equipamentos" class="template-link">
+                                        <i class="fas fa-download"></i>
+                                        Baixar Template
+                                    </a>
+                                </div>
+                                
+                                <div class="import-option">
+                                    <h4>Pontos de Medição</h4>
+                                    <p>Importar pontos de medição de arquivo Excel</p>
+                                    <div class="file-upload">
+                                        <input type="file" id="pontosMedicaoFile" accept=".xlsx,.xls">
+                                        <button class="btn" onclick="importarPontosMedicao()">
+                                            <i class="fas fa-upload"></i>
+                                            Importar
+                                        </button>
+                                    </div>
+                                    <a href="/api/importacao/template-pontos-medicao" class="template-link">
+                                        <i class="fas fa-download"></i>
+                                        Baixar Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Exportar Dados</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="export-options">
+                                <button class="btn btn-outline" onclick="exportarEquipamentos()">
+                                    <i class="fas fa-download"></i>
+                                    Exportar Equipamentos
+                                </button>
+                                <button class="btn btn-outline" onclick="exportarPontosMedicao()">
+                                    <i class="fas fa-download"></i>
+                                    Exportar Pontos de Medição
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="import-log" id="importLog" style="display: none;">
+                    <h3>Log de Importação</h3>
+                    <div class="log-content" id="logContent">
+                        <!-- Log será exibido aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configurações Section -->
+            <section id="configuracoes-section" class="section">
+                <div class="section-header">
+                    <h2>Configurações do Sistema</h2>
+                </div>
+                
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3>Fabricantes</h3>
+                        <div class="config-list" id="fabricantesList">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                        <div class="config-actions">
+                            <input type="text" placeholder="Novo fabricante" id="novoFabricante">
+                            <button class="btn btn-sm" onclick="adicionarFabricante()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-card">
+                        <h3>Tipos de Equipamento</h3>
+                        <div class="config-list" id="tiposEquipamentoList">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                        <div class="config-actions">
+                            <input type="text" placeholder="Novo tipo" id="novoTipoEquipamento">
+                            <button class="btn btn-sm" onclick="adicionarTipoEquipamento()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-card">
+                        <h3>Polos</h3>
+                        <div class="config-list" id="polosList">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                        <div class="config-actions">
+                            <input type="text" placeholder="Novo polo" id="novoPolo">
+                            <button class="btn btn-sm" onclick="adicionarPolo()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-card">
+                        <h3>Unidades</h3>
+                        <div class="config-list" id="unidadesList">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                        <div class="config-actions">
+                            <input type="text" placeholder="Nova unidade" id="novaUnidade">
+                            <button class="btn btn-sm" onclick="adicionarUnidade()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="equipamentoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="equipamentoModalTitle">Novo Equipamento</h3>
+                <button class="modal-close" onclick="closeEquipamentoModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="equipamentoForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="numeroSerie">Número de Série *</label>
+                        <input type="text" id="numeroSerie" name="numero_serie" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tagEquipamento">TAG Equipamento</label>
+                        <input type="text" id="tagEquipamento" name="tag_equipamento">
+                    </div>
+                    <div class="form-group">
+                        <label for="nomeEquipamento">Nome do Equipamento *</label>
+                        <input type="text" id="nomeEquipamento" name="nome_equipamento" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fabricanteSelect">Fabricante</label>
+                        <select id="fabricanteSelect" name="fabricante_id">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoEquipamentoSelect">Tipo de Equipamento</label>
+                        <select id="tipoEquipamentoSelect" name="tipo_equipamento_id">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="unidadeSelect">Unidade</label>
+                        <select id="unidadeSelect" name="unidade_id">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEquipamentoModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container">
+        <!-- Toasts serão adicionados aqui via JavaScript -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/equipamentos.js"></script>
+    <script src="/static/js/pontos-medicao.js"></script>
+    <script src="/static/js/certificados.js"></script>
+    <script src="/static/js/importacao.js"></script>
+    <script src="/static/js/configuracoes.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
+
